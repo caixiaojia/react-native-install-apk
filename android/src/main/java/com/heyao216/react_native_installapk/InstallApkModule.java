@@ -1,7 +1,9 @@
 package com.heyao216.react_native_installapk;
 
+import android.os.Build;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.v4.content.FileProvider;
 
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -35,9 +37,17 @@ public class InstallApkModule extends ReactContextBaseJavaModule {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        File apkFile = new File(path);
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setDataAndType(Uri.parse("file://" + path),"application/vnd.android.package-archive");
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        Uri uri;
+        if(Build.VERSION.SDK_INT >= 24) {
+          uri = FileProvider.getUriForFile(_context, "com.mi.shoppe.provider", apkFile);
+          intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        } else{
+          uri = Uri.fromFile(apkFile);
+        }
+        intent.setDataAndType(uri, "application/vnd.android.package-archive");
         _context.startActivity(intent);
     }
 }
